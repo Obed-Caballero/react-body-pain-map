@@ -1,0 +1,48 @@
+{
+  "name": "react-body-pain-map",
+  "version": "1.0.0",
+  "description": "Componente React interactivo de mapeo anatómico y localización del dolor para evaluación clínica y hojas de triage",
+  "author": "Obed Villegas",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "keywords": [
+    "react",
+    "pain-map",
+    "body-map",
+    "triage",
+    "anatomical-map",
+    "clinical",
+    "medical",
+    "expediente-clinico"
+  ]
+}
