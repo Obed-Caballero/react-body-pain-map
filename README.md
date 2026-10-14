@@ -1,18 +1,18 @@
 # React Body Pain Map (Mapa Anatómico de Dolor)
 
-Componente interactivo y ligero para React de localización anatómica del dolor, diseñado para sistemas de urgencias, hojas de triage (formato OH-URG-F-02) y expedientes clínicos electrónicos.
+Componente **headless y sin estilos forzados (unstyled)** para React de localización anatómica del dolor.
 
-Permite a los profesionales de la salud o pacientes seleccionar zonas corporales afectadas (frente, espalda y perfil) mediante un marcado visual que respeta los contornos anatómicos del cuerpo.
+Renderiza exclusivamente las siluetas del cuerpo humano (frente, espalda y perfil) junto con su capa vectorial interactiva y la lógica de selección, permitiendo que **cada desarrollador le aplique su propio diseño, CSS, clases o contenedores**.
 
 ---
 
 ## 🚀 Características
 
-- ⚡ **Sin dependencias pesadas:** Cero dependencias de UI (funciona nativamente con Tailwind, Material-UI, Bootstrap o CSS puro).
-- 🖼️ **Auto-contenido:** Imagen base de alta resolución (1774 x 887 px) integrada en Base64, lista para usar sin configurar carpetas de assets.
-- 🎨 **Trazado fiel:** Relleno de color con modo `mix-blend-mode: multiply` que conserva nítidos los detalles y contornos anatómicos originales.
-- 📋 **Diseño clínico oficial:** Encabezado `Eva | Localización` y leyenda vertical `(Marca el área afectada)`.
-- 🔒 **Modo solo lectura:** Ideal para consultar historiales clínicos o imprimir hojas de resumen.
+- 🎨 **100% Sin estilos impuestos (Unstyled / Headless):** No te obliga a usar bordes, tarjetas ni encabezados predeterminados. Solo la imagen y la interacción de marcado.
+- ⚡ **Sin dependencias de UI:** Compatible con Tailwind CSS, Material UI, Bootstrap, CSS Modules o estilos en línea.
+- 🖼️ **Auto-contenido:** Imagen base de alta resolución (1774 x 887 px) integrada en Base64; no requiere configurar carpetas de assets ni loaders de imágenes.
+- 🩸 **Trazado anatómico nítido:** Utiliza `mix-blend-mode: multiply` para que el color de marcado (`#FF0000` o tu color elegido) preserve las líneas negras del dibujo anatómico original debajo.
+- 🔒 **Modo solo lectura:** Prop `soloLectura` para visualización estática en consultas médicas o previsualizaciones.
 - 📦 **TypeScript nativo:** Tipado completo y autocompletado en tu editor.
 
 ---
@@ -21,32 +21,36 @@ Permite a los profesionales de la salud o pacientes seleccionar zonas corporales
 
 ### Desde GitHub (Directo a tu proyecto):
 ```bash
-npm install github:tu-usuario/react-body-pain-map
+npm install github:TU_USUARIO/react-body-pain-map
 ```
-*(O agrega `"react-body-pain-map": "github:tu-usuario/react-body-pain-map"` en las dependencias de tu `package.json`)*.
+*(O agrega `"react-body-pain-map": "github:TU_USUARIO/react-body-pain-map"` en las dependencias de tu `package.json`)*.
 
 ---
 
-## 💡 Uso Rápido
+## 💡 Uso Básico (Dale tu propio estilo)
 
 ```tsx
 import * as React from 'react';
 import { MapaDolor } from 'react-body-pain-map';
 
-export function MiFormularioTriage() {
+export function FormularioTriage() {
   const [zonasDolor, setZonasDolor] = React.useState<string[]>(['torso', 'brazo-derecho']);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Evaluación de Urgencias</h2>
-      
+    {/* Contenedor con tus propios estilos o clases (ej: Tailwind) */}
+    <div className="max-w-2xl mx-auto p-4 bg-white border border-gray-300 rounded shadow">
+      <h3 className="font-bold text-gray-800 mb-2">Localización del Dolor</h3>
+
       <MapaDolor
         valor={zonasDolor}
-        onChange={(nuevasZonas) => setZonasDolor(nuevasZonas)}
+        onChange={(nuevas) => setZonasDolor(nuevas)}
         colorMarcado="#FF0000"
+        className="w-full"
       />
 
-      <p>Zonas seleccionadas: {zonasDolor.join(', ') || 'Ninguna'}</p>
+      <p className="mt-3 text-sm text-gray-600">
+        Zonas marcadas: {zonasDolor.join(', ') || 'Ninguna'}
+      </p>
     </div>
   );
 }
@@ -60,22 +64,20 @@ export function MiFormularioTriage() {
 | :--- | :--- | :--- | :--- |
 | `valor` | `string[]` | `[]` | Arreglo de IDs de las zonas marcadas (ej. `['cabeza', 'torso']`). |
 | `onChange` | `(zonas: string[]) => void` | `undefined` | Callback disparado al hacer clic en cualquier zona. |
-| `soloLectura` | `boolean` | `false` | Desactiva los clics para modo visualización en consulta/PDF. |
-| `colorMarcado` | `string` | `"#FF0000"` | Color de relleno al marcar una zona. |
+| `soloLectura` | `boolean` | `false` | Desactiva los clics para modo solo lectura. |
+| `colorMarcado` | `string` | `"#FF0000"` | Color de relleno al seleccionar una zona. |
 | `colorBordeMarcado` | `string` | `"#D32F2F"` | Color del borde de la zona seleccionada. |
 | `colorHover` | `string` | `"rgba(255, 0, 0, 0.32)"` | Color traslúcido al pasar el cursor sobre una zona. |
-| `mostrarEncabezado` | `boolean` | `true` | Muestra u oculta la barra superior `Eva \| Localización`. |
-| `textoEva` | `string` | `"Eva"` | Texto del recuadro izquierdo en el encabezado. |
-| `textoTitulo` | `string` | `"Localización"` | Título en el encabezado. |
-| `textoVertical` | `string` | `"(Marca el área afectada)"` | Leyenda vertical lateral izquierda. Cadena vacía para ocultar. |
-| `anchoMaximo` | `number \| string` | `860` | Ancho máximo del contenedor en píxeles. |
+| `className` | `string` | `undefined` | Clase CSS para el contenedor principal de la silueta. |
+| `style` | `React.CSSProperties` | `undefined` | Estilos en línea para el contenedor principal. |
+| `zoneClassName` | `string \| ((id, isSelected) => string)` | `undefined` | Permite inyectar clases CSS personalizadas a cada `<path>` vectorial. |
+| `zoneStyle` | `((id, isSelected) => React.CSSProperties)` | `undefined` | Permite inyectar estilos en línea a cada `<path>` vectorial. |
+| `zonas` | `ZonaAnatomica[]` | `ZONAS_DEFAULT` | Permite sobrescribir o extender la lista de zonas vectoriales. |
 | `imagenSrc` | `string` | *(Base64 integrado)* | Permite sustituir la imagen base por otra silueta personalizada. |
-| `className` | `string` | `undefined` | Clase CSS opcional para el contenedor. |
-| `style` | `React.CSSProperties` | `undefined` | Estilos en línea adicionales. |
 
 ---
 
-## 🏷️ IDs de Zonas Disponibles
+## 🏷️ IDs de Zonas Anatómicas Disponibles
 
 - `cabeza`
 - `cuello`
@@ -94,22 +96,20 @@ export function MiFormularioTriage() {
 
 ## 🛠️ Publicar en GitHub
 
-1. Inicializa el repositorio Git dentro de la carpeta:
+1. Dentro de la carpeta:
    ```bash
-   git init
    git add .
-   git commit -m "feat: release initial version of react-body-pain-map"
+   git commit -m "feat: make component unstyled and headless"
    ```
 2. Crea el repositorio en tu cuenta de GitHub (ej. `react-body-pain-map`).
 3. Sube el código:
    ```bash
-   git remote add origin https://github.com/tu-usuario/react-body-pain-map.git
-   git branch -M main
+   git remote add origin https://github.com/TU_USUARIO/react-body-pain-map.git
    git push -u origin main
    ```
 4. ¡Listo! Ya podrás instalarla en cualquier proyecto con:
    ```bash
-   npm install github:tu-usuario/react-body-pain-map
+   npm install github:TU_USUARIO/react-body-pain-map
    ```
 
 ---

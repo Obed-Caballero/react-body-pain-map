@@ -9,73 +9,43 @@ export interface MapaDolorProps {
   valor?: string[];
 
   /**
-   * Función callback ejecutada cada vez que el usuario selecciona o deselecciona una zona.
+   * Callback ejecutado al seleccionar o deseleccionar una zona.
    */
   onChange?: (zonasIds: string[]) => void;
 
   /**
-   * Si es `true`, el componente solo muestra las áreas marcadas sin permitir interacción de clic.
+   * Desactiva la interacción de clic (modo solo lectura).
    * @default false
    */
   soloLectura?: boolean;
 
   /**
-   * Color de relleno cuando una zona está seleccionada.
+   * Color de relleno para zonas seleccionadas.
    * @default "#FF0000"
    */
   colorMarcado?: string;
 
   /**
-   * Color del borde cuando una zona está seleccionada.
+   * Color del borde de zonas seleccionadas.
    * @default "#D32F2F"
    */
   colorBordeMarcado?: string;
 
   /**
-   * Color semitransparente al pasar el cursor sobre una zona activa.
+   * Color de relleno en hover.
    * @default "rgba(255, 0, 0, 0.32)"
    */
   colorHover?: string;
 
   /**
-   * Muestra u oculta la barra superior con el encabezado clínico.
-   * @default true
-   */
-  mostrarEncabezado?: boolean;
-
-  /**
-   * Texto para la sección izquierda del encabezado.
-   * @default "Eva"
-   */
-  textoEva?: string;
-
-  /**
-   * Título principal del encabezado.
-   * @default "Localización"
-   */
-  textoTitulo?: string;
-
-  /**
-   * Texto rotado en el margen vertical izquierdo. Si es cadena vacía, no se renderiza.
-   * @default "(Marca el área afectada)"
-   */
-  textoVertical?: string;
-
-  /**
-   * Lista de zonas vectoriales personalizadas. Si no se especifica, usa `ZONAS_DEFAULT`.
+   * Lista de zonas vectoriales (por defecto las 12 zonas anatómicas calibradas).
    */
   zonas?: ZonaAnatomica[];
 
   /**
-   * URL o Data URI de la imagen anatómica de fondo. Por defecto incluye la silueta de 3 vistas.
+   * URL o Data URI de la silueta base. Por defecto usa la imagen anatómica integrada.
    */
   imagenSrc?: string;
-
-  /**
-   * Ancho máximo del contenedor en píxeles o porcentaje.
-   * @default 860
-   */
-  anchoMaximo?: number | string;
 
   /**
    * Clase CSS opcional para el contenedor principal.
@@ -86,8 +56,24 @@ export interface MapaDolorProps {
    * Estilos CSS en línea para el contenedor principal.
    */
   style?: React.CSSProperties;
+
+  /**
+   * Clase CSS opcional para cada elemento <path> de las zonas corporales.
+   * Puede ser un string o una función que recibe el id de la zona y si está seleccionada.
+   */
+  zoneClassName?: string | ((id: string, isSelected: boolean) => string);
+
+  /**
+   * Estilos CSS en línea personalizados para cada <path>.
+   */
+  zoneStyle?: (id: string, isSelected: boolean) => React.CSSProperties;
 }
 
+/**
+ * Componente interactivo y headless de mapa corporal anatómico.
+ * Renderiza exclusivamente la silueta y las zonas vectoriales interactivas,
+ * permitiendo que quien lo consuma defina sus propios estilos, tarjetas o contenedores.
+ */
 export function MapaDolor({
   valor = [],
   onChange,
@@ -95,214 +81,107 @@ export function MapaDolor({
   colorMarcado = '#FF0000',
   colorBordeMarcado = '#D32F2F',
   colorHover = 'rgba(255, 0, 0, 0.32)',
-  mostrarEncabezado = true,
-  textoEva = 'Eva',
-  textoTitulo = 'Localización',
-  textoVertical = '(Marca el área afectada)',
   zonas = ZONAS_DEFAULT,
   imagenSrc = SILUETAS_BASE64,
-  anchoMaximo = 860,
   className,
-  style
+  style,
+  zoneClassName,
+  zoneStyle
 }: MapaDolorProps): React.JSX.Element {
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
 
   const handleToggle = (id: string) => {
     if (soloLectura) return;
     const existe = valor.includes(id);
-    const nuevasZonas = existe
-      ? valor.filter((item) => item !== id)
-      : [...valor, id];
-
-    onChange?.(nuevasZonas);
+    const nuevas = existe ? valor.filter((item) => item !== id) : [...valor, id];
+    onChange?.(nuevas);
   };
 
   return (
     <div
       className={className}
       style={{
+        position: 'relative',
+        display: 'inline-block',
         width: '100%',
-        maxWidth: typeof anchoMaximo === 'number' ? `${anchoMaximo}px` : anchoMaximo,
-        backgroundColor: '#FFFFFF',
-        border: '2px solid #2D3748',
-        borderRadius: '2px',
-        overflow: 'hidden',
+        maxWidth: '100%',
         boxSizing: 'border-box',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
         ...style
       }}
     >
-      {/* Encabezado clínico opcional */}
-      {mostrarEncabezado && (
-        <div
-          style={{
-            backgroundColor: '#374151',
-            color: '#FFFFFF',
-            display: 'flex',
-            height: '38px',
-            alignItems: 'stretch',
-            borderBottom: '2px solid #2D3748',
-            userSelect: 'none'
-          }}
-        >
-          {textoEva && (
-            <div
-              style={{
-                width: '80px',
-                minWidth: '80px',
-                paddingLeft: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                fontWeight: 700,
-                fontSize: '1.05rem',
-                letterSpacing: '0.3px',
-                borderRight: '1.5px solid rgba(255, 255, 255, 0.45)',
-                boxSizing: 'border-box'
-              }}
-            >
-              {textoEva}
-            </div>
-          )}
-          <div
-            style={{
-              flex: 1,
-              paddingLeft: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              fontWeight: 700,
-              fontSize: '1.05rem',
-              letterSpacing: '0.3px',
-              boxSizing: 'border-box'
-            }}
-          >
-            {textoTitulo}
-          </div>
-        </div>
-      )}
-
-      {/* Cuerpo principal con siluetas y texto vertical */}
-      <div
+      {/* Silueta anatómica de fondo */}
+      <img
+        src={imagenSrc}
+        alt="Siluetas anatómicas"
         style={{
-          display: 'flex',
-          alignItems: 'stretch',
-          backgroundColor: '#FFFFFF',
-          minHeight: '380px',
-          boxSizing: 'border-box'
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          userSelect: 'none',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* Capa vectorial SVG con las zonas */}
+      <svg
+        viewBox="0 0 1774 887"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%'
         }}
       >
-        {textoVertical && (
-          <div
-            style={{
-              width: '50px',
-              minWidth: '50px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              userSelect: 'none',
-              boxSizing: 'border-box'
-            }}
-          >
-            <span
+        {zonas.map((zona) => {
+          const isSelected = valor.includes(zona.id);
+          const isHovered = !soloLectura && hoveredId === zona.id;
+
+          let fill = 'transparent';
+          let stroke = 'transparent';
+          let strokeWidth = 0;
+
+          if (isSelected) {
+            fill = colorMarcado;
+            stroke = colorBordeMarcado;
+            strokeWidth = 1.8;
+          } else if (isHovered) {
+            fill = colorHover;
+            stroke = colorMarcado;
+            strokeWidth = 1.4;
+          }
+
+          const customStyle = zoneStyle ? zoneStyle(zona.id, isSelected) : {};
+          const customClass = typeof zoneClassName === 'function'
+            ? zoneClassName(zona.id, isSelected)
+            : zoneClassName;
+
+          return (
+            <path
+              key={zona.id}
+              id={zona.id}
+              d={zona.d}
+              className={customClass}
+              onClick={() => handleToggle(zona.id)}
+              onMouseEnter={() => setHoveredId(zona.id)}
+              onMouseLeave={() => setHoveredId(null)}
               style={{
-                transform: 'rotate(-90deg)',
-                whiteSpace: 'nowrap',
-                color: '#4B5563',
-                fontWeight: 700,
-                fontSize: '0.88rem',
-                letterSpacing: '0.2px'
+                cursor: soloLectura ? 'default' : 'pointer',
+                fill,
+                stroke,
+                strokeWidth,
+                strokeLinejoin: 'round',
+                strokeLinecap: 'round',
+                mixBlendMode: 'multiply',
+                transition: 'fill 0.12s ease-in-out, stroke 0.12s ease-in-out',
+                ...customStyle
               }}
             >
-              {textoVertical}
-            </span>
-          </div>
-        )}
-
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '10px 24px 18px 6px',
-            boxSizing: 'border-box'
-          }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              width: '100%',
-              maxWidth: '760px'
-            }}
-          >
-            {/* Imagen anatómica de fondo */}
-            <img
-              src={imagenSrc}
-              alt="Siluetas anatómicas"
-              style={{
-                width: '100%',
-                height: 'auto',
-                display: 'block',
-                userSelect: 'none',
-                pointerEvents: 'none'
-              }}
-            />
-
-            {/* Capa vectorial SVG con las zonas */}
-            <svg
-              viewBox="0 0 1774 887"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%'
-              }}
-            >
-              {zonas.map((zona) => {
-                const isSelected = valor.includes(zona.id);
-                const isHovered = !soloLectura && hoveredId === zona.id;
-
-                let fill = 'transparent';
-                let stroke = 'transparent';
-                let strokeWidth = 0;
-
-                if (isSelected) {
-                  fill = colorMarcado;
-                  stroke = colorBordeMarcado;
-                  strokeWidth = 1.8;
-                } else if (isHovered) {
-                  fill = colorHover;
-                  stroke = colorMarcado;
-                  strokeWidth = 1.4;
-                }
-
-                return (
-                  <path
-                    key={zona.id}
-                    id={zona.id}
-                    d={zona.d}
-                    onClick={() => handleToggle(zona.id)}
-                    onMouseEnter={() => setHoveredId(zona.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                    style={{
-                      cursor: soloLectura ? 'default' : 'pointer',
-                      fill,
-                      stroke,
-                      strokeWidth,
-                      strokeLinejoin: 'round',
-                      strokeLinecap: 'round',
-                      mixBlendMode: 'multiply',
-                      transition: 'fill 0.12s ease-in-out, stroke 0.12s ease-in-out'
-                    }}
-                  >
-                    <title>{zona.label}</title>
-                  </path>
-                );
-              })}
-            </svg>
-          </div>
-        </div>
-      </div>
+              <title>{zona.label}</title>
+            </path>
+          );
+        })}
+      </svg>
     </div>
   );
 }

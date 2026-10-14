@@ -17,62 +17,37 @@ interface MapaDolorProps {
      */
     valor?: string[];
     /**
-     * Función callback ejecutada cada vez que el usuario selecciona o deselecciona una zona.
+     * Callback ejecutado al seleccionar o deseleccionar una zona.
      */
     onChange?: (zonasIds: string[]) => void;
     /**
-     * Si es `true`, el componente solo muestra las áreas marcadas sin permitir interacción de clic.
+     * Desactiva la interacción de clic (modo solo lectura).
      * @default false
      */
     soloLectura?: boolean;
     /**
-     * Color de relleno cuando una zona está seleccionada.
+     * Color de relleno para zonas seleccionadas.
      * @default "#FF0000"
      */
     colorMarcado?: string;
     /**
-     * Color del borde cuando una zona está seleccionada.
+     * Color del borde de zonas seleccionadas.
      * @default "#D32F2F"
      */
     colorBordeMarcado?: string;
     /**
-     * Color semitransparente al pasar el cursor sobre una zona activa.
+     * Color de relleno en hover.
      * @default "rgba(255, 0, 0, 0.32)"
      */
     colorHover?: string;
     /**
-     * Muestra u oculta la barra superior con el encabezado clínico.
-     * @default true
-     */
-    mostrarEncabezado?: boolean;
-    /**
-     * Texto para la sección izquierda del encabezado.
-     * @default "Eva"
-     */
-    textoEva?: string;
-    /**
-     * Título principal del encabezado.
-     * @default "Localización"
-     */
-    textoTitulo?: string;
-    /**
-     * Texto rotado en el margen vertical izquierdo. Si es cadena vacía, no se renderiza.
-     * @default "(Marca el área afectada)"
-     */
-    textoVertical?: string;
-    /**
-     * Lista de zonas vectoriales personalizadas. Si no se especifica, usa `ZONAS_DEFAULT`.
+     * Lista de zonas vectoriales (por defecto las 12 zonas anatómicas calibradas).
      */
     zonas?: ZonaAnatomica[];
     /**
-     * URL o Data URI de la imagen anatómica de fondo. Por defecto incluye la silueta de 3 vistas.
+     * URL o Data URI de la silueta base. Por defecto usa la imagen anatómica integrada.
      */
     imagenSrc?: string;
-    /**
-     * Ancho máximo del contenedor en píxeles o porcentaje.
-     * @default 860
-     */
-    anchoMaximo?: number | string;
     /**
      * Clase CSS opcional para el contenedor principal.
      */
@@ -81,8 +56,22 @@ interface MapaDolorProps {
      * Estilos CSS en línea para el contenedor principal.
      */
     style?: React.CSSProperties;
+    /**
+     * Clase CSS opcional para cada elemento <path> de las zonas corporales.
+     * Puede ser un string o una función que recibe el id de la zona y si está seleccionada.
+     */
+    zoneClassName?: string | ((id: string, isSelected: boolean) => string);
+    /**
+     * Estilos CSS en línea personalizados para cada <path>.
+     */
+    zoneStyle?: (id: string, isSelected: boolean) => React.CSSProperties;
 }
-declare function MapaDolor({ valor, onChange, soloLectura, colorMarcado, colorBordeMarcado, colorHover, mostrarEncabezado, textoEva, textoTitulo, textoVertical, zonas, imagenSrc, anchoMaximo, className, style }: MapaDolorProps): React.JSX.Element;
+/**
+ * Componente interactivo y headless de mapa corporal anatómico.
+ * Renderiza exclusivamente la silueta y las zonas vectoriales interactivas,
+ * permitiendo que quien lo consuma defina sus propios estilos, tarjetas o contenedores.
+ */
+declare function MapaDolor({ valor, onChange, soloLectura, colorMarcado, colorBordeMarcado, colorHover, zonas, imagenSrc, className, style, zoneClassName, zoneStyle }: MapaDolorProps): React.JSX.Element;
 
 declare const SILUETAS_BASE64: string;
 
