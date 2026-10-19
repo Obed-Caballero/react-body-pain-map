@@ -1,8 +1,16 @@
 import * as React from 'react';
-import { SILUETAS_BASE64 } from './imagenBase64';
-import { ZONAS_DEFAULT, ZonaAnatomica } from './zonas';
+import { SILUETAS_HOMBRE_BASE64, SILUETAS_MUJER_BASE64 } from './imagenBase64';
+import { ZONAS_HOMBRE, ZONAS_MUJER, ZonaAnatomica } from './zonas';
+
+export type TipoSilueta = 'hombre' | 'mujer' | 'general';
 
 export interface MapaDolorProps {
+  /**
+   * Tipo de silueta anatómica a mostrar: 'hombre' (general) o 'mujer'.
+   * @default "hombre"
+   */
+  silueta?: TipoSilueta;
+
   /**
    * Arreglo con los IDs de las zonas seleccionadas. Ej: `['torso', 'brazo-derecho']`
    */
@@ -38,12 +46,14 @@ export interface MapaDolorProps {
   colorHover?: string;
 
   /**
-   * Lista de zonas vectoriales (por defecto las 12 zonas anatómicas calibradas).
+   * Lista de zonas vectoriales personalizadas.
+   * Por defecto, carga las zonas calibradas para la silueta seleccionada ('hombre' o 'mujer').
    */
   zonas?: ZonaAnatomica[];
 
   /**
-   * URL o Data URI de la silueta base. Por defecto usa la imagen anatómica integrada.
+   * URL o Data URI de la silueta base.
+   * Por defecto usa la imagen anatómica integrada correspondiente a `silueta`.
    */
   imagenSrc?: string;
 
@@ -71,24 +81,28 @@ export interface MapaDolorProps {
 
 /**
  * Componente interactivo y headless de mapa corporal anatómico.
- * Renderiza exclusivamente la silueta y las zonas vectoriales interactivas,
- * permitiendo que quien lo consuma defina sus propios estilos, tarjetas o contenedores.
+ * Soporta siluetas masculinas y femeninas con calibración vectorial precisa.
  */
 export function MapaDolor({
+  silueta = 'hombre',
   valor = [],
   onChange,
   soloLectura = false,
   colorMarcado = '#FF0000',
   colorBordeMarcado = '#D32F2F',
   colorHover = 'rgba(255, 0, 0, 0.32)',
-  zonas = ZONAS_DEFAULT,
-  imagenSrc = SILUETAS_BASE64,
+  zonas,
+  imagenSrc,
   className,
   style,
   zoneClassName,
   zoneStyle
 }: MapaDolorProps): React.JSX.Element {
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
+
+  const esMujer = silueta === 'mujer';
+  const zonasEfectivas = zonas ?? (esMujer ? ZONAS_MUJER : ZONAS_HOMBRE);
+  const imagenEfectiva = imagenSrc ?? (esMujer ? SILUETAS_MUJER_BASE64 : SILUETAS_HOMBRE_BASE64);
 
   const handleToggle = (id: string) => {
     if (soloLectura) return;
@@ -111,8 +125,8 @@ export function MapaDolor({
     >
       {/* Silueta anatómica de fondo */}
       <img
-        src={imagenSrc}
-        alt="Siluetas anatómicas"
+        src={imagenEfectiva}
+        alt={`Siluetas anatómicas (${silueta})`}
         style={{
           width: '100%',
           height: 'auto',
@@ -122,7 +136,7 @@ export function MapaDolor({
         }}
       />
 
-      {/* Capa vectorial SVG con las zonas */}
+      {/* Capa vectorial SVG con las zonas calibradas */}
       <svg
         viewBox="0 0 1774 887"
         style={{
@@ -133,7 +147,7 @@ export function MapaDolor({
           height: '100%'
         }}
       >
-        {zonas.map((zona) => {
+        {zonasEfectivas.map((zona) => {
           const isSelected = valor.includes(zona.id);
           const isHovered = !soloLectura && hoveredId === zona.id;
 
